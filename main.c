@@ -111,7 +111,7 @@ int main(int argc, char const *argv[])
         int b_run_single, b_run_multiple;
         b_run_single = b_run_multiple = 1;
 
-        if (argc) {
+        if (argc == 2) {
                 if (!strcmp(argv[1], "single"))
                         b_run_multiple = 0;
 
