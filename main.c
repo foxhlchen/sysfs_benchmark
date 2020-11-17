@@ -10,7 +10,9 @@
 #include <pthread.h>
 
 #define RUN_TIMES 1000
-#define THREAD_CNT 4
+#define THREAD_CNT 2
+
+int run = 0;
 
 uint64_t get_time() 
 {
@@ -64,6 +66,10 @@ static void* thread_run(void* args)
         int i;
         uint64_t start_time, end_time; 
 
+        while (!run) {
+                sched_yield();
+        }
+
         start_time = get_time();
         for (i = 0; i < RUN_TIMES; i++) {
                 if (execute_one() < 0) {
@@ -87,6 +93,8 @@ static int run_multiple_thread()
         for (int i = 0; i < THREAD_CNT; i++) {
                 pthread_create(&thread_id[i], NULL, thread_run, NULL); 
         }
+
+        run = 1;
 
         for (int i = 0; i < THREAD_CNT; i++) {
                 pthread_join(thread_id[i], &retval);
