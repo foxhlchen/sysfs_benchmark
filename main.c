@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#define RUN_TIMES 10000
+#define RUN_TIMES 1000
 #define THREAD_CNT 2
 
 int run = 0;
@@ -56,7 +56,8 @@ static int run_signle_thread()
         }
         end_time = get_time();
 
-        printf("single: %fms\n", (end_time - start_time)/ 1e6);
+        printf("single: total %fms per %fus\n", (end_time - start_time)/ 1e6, 
+                (end_time - start_time)/ 1e3 / RUN_TIMES);
 
         return 0;
 }
@@ -79,7 +80,8 @@ static void* thread_run(void* args)
         }
         end_time = get_time();
 
-        printf("concur: %fms\n", (end_time - start_time)/ 1e6);
+        printf("concur: total %fms per %fus\n", (end_time - start_time)/ 1e6, 
+                (end_time - start_time)/ 1e3 / RUN_TIMES);
 
         return (void*) 0;
 }
@@ -130,6 +132,12 @@ int main(int argc, char const *argv[])
                 if (rt < 0)
                         return -1;
         }
+
+        printf("times: %d", RUN_TIMES);
+        if (b_run_multiple) 
+                printf(" threads: %d", THREAD_CNT);
+
+        printf("\n");
 
         return 0;
 }
