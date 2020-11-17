@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#define RUN_TIMES 1000
+#define RUN_TIMES 10000
 #define THREAD_CNT 2
 
 int run = 0;
@@ -108,14 +108,28 @@ static int run_multiple_thread()
 int main(int argc, char const *argv[])
 {
         int rt;
+        int b_run_single, b_run_multiple;
+        b_run_single = b_run_multiple = 1;
 
-        rt = run_signle_thread();
-        if (rt < 0)
-                return -1;
+        if (argc) {
+                if (!strcmp(argv[1], "single"))
+                        b_run_multiple = 0;
 
-        rt = run_multiple_thread();
-        if (rt < 0)
-                return -1;
+                if (!strcmp(argv[1], "multiple"))
+                        b_run_single = 0;
+        }
+
+        if (b_run_single) {
+                rt = run_signle_thread();
+                if (rt < 0)
+                        return -1;
+        }
+
+        if (b_run_multiple) {
+                rt = run_multiple_thread();
+                if (rt < 0)
+                        return -1;
+        }
 
         return 0;
 }
