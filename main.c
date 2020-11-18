@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -9,8 +11,8 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#define RUN_TIMES 1000
-#define THREAD_CNT 2
+#define RUN_TIMES 10000
+#define THREAD_CNT 8
 
 int run = 0;
 
@@ -66,6 +68,17 @@ static void* thread_run(void* args)
 {
         int i;
         uint64_t start_time, end_time; 
+        cpu_set_t cpuset;
+        pthread_t thread;
+        long s;
+
+        thread = pthread_self();
+        CPU_ZERO(&cpuset);
+        s = pthread_getaffinity_np(thread, sizeof(cpuset), &cpuset);
+        if (s != 0) {
+                printf("set cpu affinity error");
+                return (void*) s;
+        }
 
         while (!run) {
                 sched_yield();
@@ -80,8 +93,15 @@ static void* thread_run(void* args)
         }
         end_time = get_time();
 
-        printf("concur: total %fms per %fus\n", (end_time - start_time)/ 1e6, 
+        printf("concur: total %fms per %fus ", (end_time - start_time)/ 1e6, 
                 (end_time - start_time)/ 1e3 / RUN_TIMES);
+
+        for (i = 0; i < CPU_SETSIZE; i++) {
+                if (CPU_ISSET(i, &cpuset))
+                   printf(" CPU %d", i);
+        }
+
+        printf("\n");
 
         return (void*) 0;
 }
@@ -89,11 +109,25 @@ static void* thread_run(void* args)
 static int run_multiple_thread() 
 {
         pthread_t thread_id[THREAD_CNT];
+        cpu_set_t cpuset;
         int i;
         void *retval;
+        int core = 0;
+        int s;
 
-        for (int i = 0; i < THREAD_CNT; i++) {
+        long number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
+
+        for (int i = 0; i < THREAD_CNT; i++, core++) {
+                core %= (number_of_processors);
+                CPU_ZERO(&cpuset);
+                CPU_SET(core, &cpuset);
+
                 pthread_create(&thread_id[i], NULL, thread_run, NULL); 
+                s = pthread_setaffinity_np(thread_id[i], sizeof(cpuset), &cpuset);
+                if (s != 0) {
+                        printf("set cpu affinity error");
+                        return s; 
+                }
         }
 
         run = 1;
@@ -111,6 +145,8 @@ int main(int argc, char const *argv[])
 {
         int rt;
         int b_run_single, b_run_multiple;
+        long number_of_processors;
+
         b_run_single = b_run_multiple = 1;
 
         if (argc == 2) {
@@ -134,8 +170,10 @@ int main(int argc, char const *argv[])
         }
 
         printf("times: %d", RUN_TIMES);
-        if (b_run_multiple) 
-                printf(" threads: %d", THREAD_CNT);
+        if (b_run_multiple) {
+                number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
+                printf(" threads: %d cpus: %d", THREAD_CNT, number_of_processors);
+        }
 
         printf("\n");
 
