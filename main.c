@@ -130,7 +130,6 @@ static int run_multiple_thread()
                 }
         }
 
-        sleep(2);
         run = 1;
 
         for (int i = 0; i < THREAD_CNT; i++) {
