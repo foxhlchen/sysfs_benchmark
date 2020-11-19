@@ -11,8 +11,8 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#define RUN_TIMES 10000
-#define THREAD_CNT 8
+#define RUN_TIMES 1000
+int THREAD_CNT = 4;
 
 int run = 0;
 
@@ -130,6 +130,7 @@ static int run_multiple_thread()
                 }
         }
 
+        sleep(2);
         run = 1;
 
         for (int i = 0; i < THREAD_CNT; i++) {
@@ -146,12 +147,16 @@ int main(int argc, char const *argv[])
         int rt;
         int b_run_single, b_run_multiple;
         long number_of_processors;
-
+                
         b_run_single = b_run_multiple = 1;
+        THREAD_CNT = number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
 
         if (argc == 2) {
                 if (!strcmp(argv[1], "single"))
                         b_run_multiple = 0;
+
+                if (!strcmp(argv[1], "concurrent"))
+                        b_run_single = 0;
 
                 if (!strcmp(argv[1], "multiple"))
                         b_run_single = 0;
@@ -170,10 +175,8 @@ int main(int argc, char const *argv[])
         }
 
         printf("times: %d", RUN_TIMES);
-        if (b_run_multiple) {
-                number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
+        if (b_run_multiple)
                 printf(" threads: %d cpus: %d", THREAD_CNT, number_of_processors);
-        }
 
         printf("\n");
 
