@@ -74,6 +74,14 @@ static void* thread_run(void* args)
 
         thread = pthread_self();
         CPU_ZERO(&cpuset);
+        CPU_SET((long) args, &cpuset);
+        s = pthread_setaffinity_np(thread, sizeof(cpuset), &cpuset);
+        if (s != 0) {
+                printf("set cpu affinity error");
+                return (void*) s; 
+        }
+
+        CPU_ZERO(&cpuset);
         s = pthread_getaffinity_np(thread, sizeof(cpuset), &cpuset);
         if (s != 0) {
                 printf("set cpu affinity error");
@@ -112,22 +120,14 @@ static int run_multiple_thread()
         cpu_set_t cpuset;
         int i;
         void *retval;
-        int core = 0;
+        long core = 0;
         int s;
 
         long number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
 
         for (int i = 0; i < THREAD_CNT; i++, core++) {
                 core %= (number_of_processors);
-                CPU_ZERO(&cpuset);
-                CPU_SET(core, &cpuset);
-
-                pthread_create(&thread_id[i], NULL, thread_run, NULL); 
-                s = pthread_setaffinity_np(thread_id[i], sizeof(cpuset), &cpuset);
-                if (s != 0) {
-                        printf("set cpu affinity error");
-                        return s; 
-                }
+                pthread_create(&thread_id[i], NULL, thread_run, (void*) core); 
         }
 
         run = 1;
