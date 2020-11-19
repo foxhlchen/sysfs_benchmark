@@ -3,7 +3,7 @@
 sysfs_file="/sys/devices/system/cpu/cpu0/topology/die_id"
 
 read_file() {
-	foo=$(cat ${sysfs_file})
+	foo=$(<${sysfs_file})
 }
 
 loop() {
