@@ -42,6 +42,8 @@ static inline int execute_one()
         rt = close(fd);
         if (rt < 0)
                 return -1;
+
+        return 0;
 }
 
 static int run_signle_thread() 
@@ -117,22 +119,20 @@ static void* thread_run(void* args)
 static int run_multiple_thread() 
 {
         pthread_t thread_id[THREAD_CNT];
-        cpu_set_t cpuset;
         int i;
         void *retval;
         long core = 0;
-        int s;
 
         long number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
 
-        for (int i = 0; i < THREAD_CNT; i++, core++) {
+        for (i = 0; i < THREAD_CNT; i++, core++) {
                 core %= (number_of_processors);
                 pthread_create(&thread_id[i], NULL, thread_run, (void*) core); 
         }
 
         run = 1;
 
-        for (int i = 0; i < THREAD_CNT; i++) {
+        for (i = 0; i < THREAD_CNT; i++) {
                 pthread_join(thread_id[i], &retval);
                 if (retval < 0)
                         return -1;
@@ -175,7 +175,7 @@ int main(int argc, char const *argv[])
 
         printf("times: %d", RUN_TIMES);
         if (b_run_multiple)
-                printf(" threads: %d cpus: %d", THREAD_CNT, number_of_processors);
+                printf(" threads: %d cpus: %ld", THREAD_CNT, number_of_processors);
 
         printf("\n");
 
