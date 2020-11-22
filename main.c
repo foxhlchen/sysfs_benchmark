@@ -31,7 +31,7 @@ static inline int execute_one()
         int fd;
         int rt;
 
-        fd = open("/sys/devices/system/cpu/cpu0/topology/die_id", O_RDONLY);
+        fd = open("/sys/devices/system/cpu/cpu0/topology/core_id", O_RDONLY);
         if (fd < 0)
                 return -1;
         
