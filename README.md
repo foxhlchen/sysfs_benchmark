@@ -1,7 +1,7 @@
 # sysfs_benchmark
-A sysfs read write close benchmark
+A sysfs open read close benchmark
 
-Open+Read+Close /sys/devices/system/cpu/cpu0/topology/core_id 1000 times and measure the time consumption.
+open,read,close /sys/devices/system/cpu/cpu0/topology/core_id 1000 times and measure the time consumption.
 
 ## Usage
 
